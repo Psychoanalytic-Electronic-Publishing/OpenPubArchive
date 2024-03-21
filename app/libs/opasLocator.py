@@ -472,10 +472,6 @@ class Locator:
             self.pgVar = str(ord(self.pgVar) - ord("A"))
             logger.info(f"Old Style Variant Requested: {self.pgVar}")
 
-        if (self.jrnlVol is None and self.jrnlYear is not None and self.jrnlCode is None):
-            # look this up
-            self.jrnlVol, self.jrnlVolList = gJrnlData.getVol(self.jrnlCode, self.jrnlYear)
-
         self.__exceptions() # Adjustments for exceptions
 
     #--------------------------------------------------------------------------------
@@ -897,27 +893,6 @@ class Locator:
                 self.prePrefix = opasgenlib.default(lm.group("preprefix"), "")
                 self.prefix = opasgenlib.default(lm.group("pre"), "")
                 self.suffix = opasgenlib.default(lm.group("post"), "")
-
-        if self.jrnlYear is not None:
-            self.jrnlVol, self.jrnlVolList = gJrnlData.getVol(self.jrnlCode, self.jrnlYear)
-
-            if self.jrnlVol is None:
-                log_everywhere_if(True, "error", f"Locator (decompile): Journal Year/Volume Exception. ('{theStr}')")
-                retVal = 0
-        else:
-            if self.jrnlVol is not None:
-                self.jrnlYear = gJrnlData.getYear(self.jrnlCode, self.jrnlVol)
-
-                if self.jrnlVol.volSuffix != "" and self.jrnlVol.volSuffix != "S": # not for Supplements
-                    jrnlIss = ord(self.jrnlVol.volSuffix[0]) - ord("A") + 1
-                    try:
-                        if jrnlIss > 0 and jrnlIss < 8: # only allow 8 issues, otherwise must be "special" like Supplement
-                            self.jrnlIss = jrnlIss
-                    except Exception as e:
-                        log_everywhere_if(True, "error", f"Journal Issue error; {e}")
-                        retVal = 0
-                        
-
 
         self.__standardize()
         # validate if it's not a TOJ locator

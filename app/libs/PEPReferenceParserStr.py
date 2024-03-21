@@ -489,17 +489,6 @@ class StrReferenceParser(object):
 
                 logger.debug("Ref - No year or volume information: %s" % (ref_text))
 
-        if self.bib_volume==None:
-            if self.bib_year is not None:
-                # lookup vol
-                if self.bib_sourcecode is not None:
-                    try:
-                        self.bib_volume, self.bib_vol_list = gJrnlData.getVol(self.bib_sourcecode, self.bib_year)
-                    except Exception as e:
-                        pass # cant find them
-                else:
-                    if gDbg1: print("Ref - No source code to look up")
-
             # see if we found it!  If not, try something else.
             if self.bib_volume is None:
                 # try a special vol search for labeled volume)
