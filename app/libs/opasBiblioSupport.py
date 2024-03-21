@@ -78,7 +78,6 @@ import PEPJournalData
 jrnlData = PEPJournalData.PEPJournalData()
 import PEPBookInfo
 known_books = PEPBookInfo.PEPBookInfo()
-from PEPReferenceParserStr import StrReferenceParser
 SPECIAL_BOOK_NAME_PATTERN = "((Ges|Gs)\.?\s+Schr\.?)|(Collected Papers)"
 book_titles_mismarked = re.compile(SPECIAL_BOOK_NAME_PATTERN, flags=re.I)
 SPECIAL_BOOK_RECOGNITION_PATTERN = "Wien" # Wien=Vienna
@@ -579,15 +578,6 @@ class BiblioEntry(models.Biblioxml):
                 if verbose: print (f"\t...Found book title '{book_title}'. Record will be updated.")
                 self.record_updated = True
                 
-        else:
-            year_of_publication = opasxmllib.xml_get_subelement_textsingleton(self.parsed_ref, "y")
-            if not self.ref_sourcecode:
-                sourcecode, dummy, dummy = jrnlData.getPEPJournalCode(self.ref_sourcetitle)
-                if sourcecode and not self.ref_sourcecode:
-                    self.ref_sourcecode = sourcecode
-                    if verbose: print (f"\t...Found sourcecode '{sourcecode}'. Record {self.ref_local_id} will be updated.")
-                    self.record_updated = True
-                
         if year_of_publication != "":
             # make sure it's not a range or list of some sort.  Grab first year
             year_of_publication = opasgenlib.year_grabber(year_of_publication)
@@ -623,40 +613,6 @@ class BiblioEntry(models.Biblioxml):
         elif self.ref_sourcetitle and self.ref_is_book:
             ref_title = self.ref_sourcetitle
             self.ref_title = ref_title 
-        else:
-            # if it's PEP reference, try harder using a string parse to get the title and link
-            # otherwise, wait for it to be updated by opasDataLinker.
-            if self.ref_in_pep:
-                parsed_str = StrReferenceParser()
-                ref_rx = parsed_str.parse_str(self.ref_text)
-                if ref_rx and ocd.article_exists(ref_rx):
-                    if self.ref_rx is None:
-                        self.ref_rx = ref_rx
-                        self.ref_rx_confidence = parsed_str.bib_rx_confidence
-                        self.link_updated = True
-                
-                if parsed_str.bib_rxcf:
-                    if self.ref_rxcf is None:
-                        self.ref_rxcf = parsed_str.bib_rxcf
-                        self.ref_rx_confidence = parsed_str.bib_rxcf_confidence
-                        self.link_updated = True
-            
-                if parsed_str.bib_authors:
-                    ref_title = self.ref_text.replace(parsed_str.bib_authors, "")
-                if parsed_str.bib_volume:
-                    ref_title = ref_title.replace(str(parsed_str.bib_volume), "")
-                if parsed_str.bib_year:
-                    ref_title = ref_title.replace(str(parsed_str.bib_year), "")
-                if parsed_str.bib_sourcetitle:
-                    ref_title = ref_title.replace(str(parsed_str.bib_sourcetitle), "")
-                    ref_title = ref_title.strip()
-
-                if ref_title:
-                    self.ref_title = ref_title
-                    if verbose: print (f"\t...Found ref title via string parse '{ref_title}'. Record will be updated.")
-                    self.record_updated = True
-                else:
-                    self.ref_title = ""
         
         author_name_list = [etree.tostring(x, with_tail=False).decode("utf8") for x in self.parsed_ref.findall("a") if x is not None]
         self.ref_authors_xml = '; '.join(author_name_list)
