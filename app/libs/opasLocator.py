@@ -1113,25 +1113,6 @@ def baseOfBaseCode(baseCode):
     return retVal[0]
 
 #--------------------------------------------------------------------------------
-def baseCodeToJournalName(baseCode):
-    """
-    Return the jrnl name for a baseCode
-
-    >>> print (baseCodeToJournalName("ANIJP-IT.2006"))
-    Annata Psicoanalitica Internazionale
-    >>> print (baseCodeToJournalName("anijp-fr.2006"))
-    Annee Psychanalytique Internationale
-
-    """
-    base = baseOfBaseCode(baseCode)
-    retVal = gJrnlData.jrnlFull.get(base, None)
-    if retVal is None:
-        print("Can't find long name for baseCode: %s and base: %s" % (baseCode, base))
-        raise Exception(("Stopped!"))
-
-    return retVal
-
-#--------------------------------------------------------------------------------
 def isLocator(idString):
     """
     Return True if the string is a valid locator (either a locator instance,
