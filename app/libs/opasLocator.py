@@ -32,12 +32,6 @@ from opasConfig import gBookCodes, gSplitBooks, REFBOOK, REFBOOKSERIES, REFBOOKS
 import PEPJournalData
 import opasXMLSplitBookSupport
 
-global gJrnlData
-try:  # see if it's been defined.
-    a = gJrnlData
-except:
-    gJrnlData = PEPJournalData.PEPJournalData()
-
 import opasGenSupportLib as opasgenlib
 import opasDocuments
 import opasLocalID

@@ -61,8 +61,6 @@ import re
 import opasGenSupportLib as opasgenlib
 import opasDocuments
 
-global gJrnlData
-
 gDbg1 = 0  # details
 gDbg2 = 1  # High level
 import opasCentralDBLib

@@ -61,12 +61,6 @@ import opasXMLPageConcordance
 import opasEmbargoContent
 import opasBiblioSupport
 
-global gJrnlData
-try:  # see if it's been defined.
-    a = gJrnlData
-except:
-    gJrnlData = PEPJournalData.PEPJournalData()
-
 glossEngine = PEPGlossaryRecognitionEngine.GlossaryRecognitionEngine(gather=False)
 max_display_len_cf_articles = 90
 

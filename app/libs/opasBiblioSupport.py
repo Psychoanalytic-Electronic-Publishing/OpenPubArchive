@@ -75,7 +75,6 @@ from opasLocalID import LocalID
 
 # new for processing code
 import PEPJournalData
-jrnlData = PEPJournalData.PEPJournalData()
 import PEPBookInfo
 known_books = PEPBookInfo.PEPBookInfo()
 SPECIAL_BOOK_NAME_PATTERN = "((Ges|Gs)\.?\s+Schr\.?)|(Collected Papers)"
