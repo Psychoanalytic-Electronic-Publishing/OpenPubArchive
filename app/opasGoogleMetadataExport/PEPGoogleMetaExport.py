@@ -25,7 +25,6 @@ import pymysql
 #import libPEPBiblioDB
 #import PEPArticleListDB
 #import PEPLocator
-#import PEPJournalData
 #import sciDocuments
 #from PEPGlobals import *
 #import MySQLdb

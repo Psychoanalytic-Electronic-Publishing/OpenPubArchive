@@ -92,8 +92,6 @@ import boto3
 # import opasXMLProcessor
 #import opasArticleIDSupport
 # import models
-# import PEPJournalData
-# import PEPReferenceParserStr
 
 gDbg1 = 0	# details
 gDbg2 = 1	# High level
