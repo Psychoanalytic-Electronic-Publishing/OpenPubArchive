@@ -576,6 +576,9 @@ class BiblioEntry(models.Biblioxml):
                 self.ref_sourcetitle = book_title  # book title (bst)
                 if verbose: print (f"\t...Found book title '{book_title}'. Record will be updated.")
                 self.record_updated = True
+
+        else:
+            year_of_publication = opasxmllib.xml_get_subelement_textsingleton(self.parsed_ref, "y")
                 
         if year_of_publication != "":
             # make sure it's not a range or list of some sort.  Grab first year
