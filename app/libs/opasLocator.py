@@ -510,31 +510,6 @@ class Locator:
         return "%s%s" % (jrnlCode, jrnlVol.volID())
 
     #--------------------------------------------------------------------------------
-    def getJournalAndYear(self):
-        """
-        Return jrnlcode and year as an ID
-        """
-        retVal = ""
-        if self.jrnlYear is None or self.jrnlYear == 0:
-            if (self.jrnlVol is not None and self.jrnlCode is not None):
-                self.jrnlYear = gJrnlData.getYear(self.jrnlCode, self.jrnlVol)
-            elif self.jrnlVol is not None:
-                self.jrnlYear = self.jrnlVol
-            else:
-                raise "No data to calc year %s" % str(self)
-
-            if self.jrnlYear is None or self.jrnlYear == 0:
-                artIDParts = self.splitArticleID(includeLocalID=0)
-                retVal =  "%s.%s" % (self.jrnlCode, artIDParts[1])
-            else:
-                retVal =  "%s.%s" % (self.jrnlCode, self.jrnlYear)
-
-        else:
-            retVal =  "%s.%s" % (self.jrnlCode, self.jrnlYear)
-
-        return retVal
-
-    #--------------------------------------------------------------------------------
     def isVariant(self):
         """
         	Is this locator a variant (other than the default variant, "A")
