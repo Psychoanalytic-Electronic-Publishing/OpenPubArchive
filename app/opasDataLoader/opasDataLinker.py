@@ -80,8 +80,6 @@ import opasConfig
 import opasBiblioSupport
 import opasCentralDBLib
 import localsecrets
-import PEPBookInfo
-known_books = PEPBookInfo.PEPBookInfo()
 
 import csv
 import boto3

@@ -46,7 +46,6 @@ from opasLocator import Locator
 import opasGenSupportLib as opasgenlib
 import loaderConfig
 # import opasSolrLoadSupport
-import PEPBookInfo
 import opasXMLPEPAuthorID 
 import PEPGlossaryRecognitionEngine
 import opasXMLSplitBookSupport  # Module not done and may not be needed.
@@ -485,7 +484,6 @@ def update_bincs(parsed_xml, artInfo, ocd, pretty_print=False, verbose=False):
         AIM.030.0157A - all bincs!
 
     """
-    known_books = PEPBookInfo.PEPBookInfo()
     
     # add links to biblio entries, rx to be
     bibReferences = parsed_xml.xpath("/pepkbd3//binc")
@@ -572,71 +570,71 @@ def update_bincs(parsed_xml, artInfo, ocd, pretty_print=False, verbose=False):
 
                 
             else:
-                bk_locator_str, match_val, whatever = known_books.getPEPBookCodeStr(bib_entry.ref_text)
-                if bk_locator_str is not None:
-                    parsed_ref.attrib["rx"] = bk_locator_str 
-                    search_str = f"//binc[@id='{ref_id}']"
-                    msg = f"\t\tBinc Matched Book {match_val}. {opasxmllib.xml_xpath_return_xmlstringlist(parsed_xml, search_str)[0]}"
-                    log_everywhere_if(verbose, level="info", msg=msg)
+                # bk_locator_str, match_val, whatever = known_books.getPEPBookCodeStr(bib_entry.ref_text)
+                # if bk_locator_str is not None:
+                #     parsed_ref.attrib["rx"] = bk_locator_str 
+                #     search_str = f"//binc[@id='{ref_id}']"
+                #     msg = f"\t\tBinc Matched Book {match_val}. {opasxmllib.xml_xpath_return_xmlstringlist(parsed_xml, search_str)[0]}"
+                #     log_everywhere_if(verbose, level="info", msg=msg)
                     
-                else:
+                # else:
                     # see if we have info to link SE/GW etc., these are in a sense like journals
-                    pep_ref = False
-                    if PEPJournalData.PEPJournalData.rgxSEPat2.match(bib_entry.ref_sourcetitle) or PEPJournalData.PEPJournalData.rgxSEPat.match(bib_entry.ref_sourcetitle):
-                        pep_ref = True
-                        bib_entry.ref_sourcecode = "SE"
-                    elif PEPJournalData.PEPJournalData.rgxGWPat2.match(bib_entry.ref_sourcetitle):
-                        pep_ref = True
-                        bib_entry.ref_sourcecode = "GW"
-                       
-                    if pep_ref:
-                        locator = Locator(strLocator=None,
-                                           jrnlCode=bib_entry.ref_sourcecode, 
-                                           jrnlVolSuffix="", 
-                                           jrnlVol=bib_entry.ref_volume, 
-                                           jrnlIss=None, 
-                                           pgVar="A", 
-                                           pgStart=bib_pgstart, 
-                                           jrnlYear=bib_entry.ref_year, 
-                                           localID=ref_id, 
-                                           keepContext=1, 
-                                           forceRoman=False, 
-                                           notFatal=True, 
-                                           noStartingPageException=True, 
-                                           filename=artInfo.filename)
-                        # check locator
-                        if locator is not None:
+                pep_ref = False
+                if PEPJournalData.PEPJournalData.rgxSEPat2.match(bib_entry.ref_sourcetitle) or PEPJournalData.PEPJournalData.rgxSEPat.match(bib_entry.ref_sourcetitle):
+                    pep_ref = True
+                    bib_entry.ref_sourcecode = "SE"
+                elif PEPJournalData.PEPJournalData.rgxGWPat2.match(bib_entry.ref_sourcetitle):
+                    pep_ref = True
+                    bib_entry.ref_sourcecode = "GW"
+                    
+                if pep_ref:
+                    locator = Locator(strLocator=None,
+                                        jrnlCode=bib_entry.ref_sourcecode, 
+                                        jrnlVolSuffix="", 
+                                        jrnlVol=bib_entry.ref_volume, 
+                                        jrnlIss=None, 
+                                        pgVar="A", 
+                                        pgStart=bib_pgstart, 
+                                        jrnlYear=bib_entry.ref_year, 
+                                        localID=ref_id, 
+                                        keepContext=1, 
+                                        forceRoman=False, 
+                                        notFatal=True, 
+                                        noStartingPageException=True, 
+                                        filename=artInfo.filename)
+                    # check locator
+                    if locator is not None:
+                        base_info = opasPySolrLib.get_base_article_info_by_id(locator)
+                        if base_info is None:
+                            # try without page number
+                            locator = Locator(strLocator=None,
+                                                jrnlCode=bib_entry.ref_sourcecode, 
+                                                jrnlVolSuffix="", 
+                                                jrnlVol=bib_entry.ref_volume, 
+                                                jrnlIss=None, 
+                                                jrnlYear=bib_entry.ref_year, 
+                                                localID=ref_id, 
+                                                keepContext=1, 
+                                                forceRoman=False, 
+                                                notFatal=True, 
+                                                noStartingPageException=True, 
+                                                filename=artInfo.filename)
+                            # recheck locator
                             base_info = opasPySolrLib.get_base_article_info_by_id(locator)
-                            if base_info is None:
-                                # try without page number
-                                locator = Locator(strLocator=None,
-                                                   jrnlCode=bib_entry.ref_sourcecode, 
-                                                   jrnlVolSuffix="", 
-                                                   jrnlVol=bib_entry.ref_volume, 
-                                                   jrnlIss=None, 
-                                                   jrnlYear=bib_entry.ref_year, 
-                                                   localID=ref_id, 
-                                                   keepContext=1, 
-                                                   forceRoman=False, 
-                                                   notFatal=True, 
-                                                   noStartingPageException=True, 
-                                                   filename=artInfo.filename)
-                                # recheck locator
-                                base_info = opasPySolrLib.get_base_article_info_by_id(locator)
-                                
-                            if base_info is not None:
-                                parsed_ref.attrib["rx"] = locator.articleID()
-                                search_str = f"//binc[@id='{ref_id}']"
-                                msg = f"\t\tMatched Book {match_val}. {opasxmllib.xml_xpath_return_xmlstringlist(parsed_xml, search_str)[0]}"
-                                log_everywhere_if(verbose, level="debug", msg=msg)
-                            else:
-                                log_everywhere_if(verbose, level="debug", msg=f"didn't find this: {bib_entry.ref_sourcecode}")
                             
+                        if base_info is not None:
+                            parsed_ref.attrib["rx"] = locator.articleID()
+                            search_str = f"//binc[@id='{ref_id}']"
+                            msg = f"\t\tMatched Book {match_val}. {opasxmllib.xml_xpath_return_xmlstringlist(parsed_xml, search_str)[0]}"
+                            log_everywhere_if(verbose, level="debug", msg=msg)
+                        else:
+                            log_everywhere_if(verbose, level="debug", msg=f"didn't find this: {bib_entry.ref_sourcecode}")
                         
-                    else:     
-                        locator = None
-                        msg = f"\t\tSkipped: {bib_entry.ref_text}"
-                        log_everywhere_if(verbose, level="debug", msg=msg)
+                    
+                else:     
+                    locator = None
+                    msg = f"\t\tSkipped: {bib_entry.ref_text}"
+                    log_everywhere_if(verbose, level="debug", msg=msg)
 
 #------------------------------------------------------------------------------------------------------
 def add_pagenbrs_to_splitbook_table(parsed_xml, artInfo, ocd, split_book_data, pretty_print=False, verbose=False):

@@ -75,8 +75,6 @@ from opasLocalID import LocalID
 
 # new for processing code
 import PEPJournalData
-import PEPBookInfo
-known_books = PEPBookInfo.PEPBookInfo()
 SPECIAL_BOOK_NAME_PATTERN = "((Ges|Gs)\.?\s+Schr\.?)|(Collected Papers)"
 book_titles_mismarked = re.compile(SPECIAL_BOOK_NAME_PATTERN, flags=re.I)
 SPECIAL_BOOK_RECOGNITION_PATTERN = "Wien" # Wien=Vienna
@@ -236,14 +234,6 @@ def get_reference_correction(ocd, article_id, ref_local_id=None, verbose=None):
     
     # return a single model (record) or None if not in the table
     return ret_val  # return True for success
-
-#------------------------------------------------------------------------------------------------------
-def check_for_known_books(ref_text):
-    ret_val = known_books.getPEPBookCodeStr(ref_text)
-    if ret_val[0] is not None:
-        ret_val[2] = "pattern"
-
-    return ret_val
 
 #------------------------------------------------------------------------------------------------------
 def check_for_vol_suffix(ocd, loc_str, verbose=False):
@@ -709,14 +699,14 @@ class BiblioEntry(models.Biblioxml):
         
         if self.ref_rx is None:
             # still no known rx
-            if self.ref_is_book:
-                loc_str, match_val, whatever = known_books.getPEPBookCodeStr(self.ref_text)
-                if loc_str is not None:
-                    self.ref_rx = loc_str 
-                    self.ref_rx_confidence = opasConfig.RX_CONFIDENCE_PROBABLE
-                    self.ref_link_source = opasConfig.RX_LINK_SOURCE_PATTERN
-                    msg = f"\t\t\t...Matched Book {match_val}."
-                    log_everywhere_if(verbose, level="debug", msg=msg)
+            # if self.ref_is_book:
+            #     loc_str, match_val, whatever = known_books.getPEPBookCodeStr(self.ref_text)
+            #     if loc_str is not None:
+            #         self.ref_rx = loc_str 
+            #         self.ref_rx_confidence = opasConfig.RX_CONFIDENCE_PROBABLE
+            #         self.ref_link_source = opasConfig.RX_LINK_SOURCE_PATTERN
+            #         msg = f"\t\t\t...Matched Book {match_val}."
+            #         log_everywhere_if(verbose, level="debug", msg=msg)
             
             if self.ref_sourcecode and not link_updated:
                 if not opasgenlib.is_empty(self.ref_pgrg):
