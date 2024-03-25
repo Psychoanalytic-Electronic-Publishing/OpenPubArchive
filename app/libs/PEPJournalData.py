@@ -74,6 +74,13 @@ class PEPJournalData:
     >>>
     """
 
+    SEPat = r"(?P<jrnlname>\&SE\;|(S\.E\.)|.*(The)?\s*(Std\.|((Stand(\.|ard)))\s+Ed(\.|ition|it\.))(\s*(of\s+)?(the\s+)?complete\s+psychological\s+works\s+(of\s+)?(Sigmund\s+)?Freud)?,?|((the\s+)?complete\s+psychological\s+works\s+of\s+Sigmund\s+Freud))"
+    SEPat2 = r"\bSE\b|S\.\s?E\.|Standard Ed(ition|.)" # Keep sep so not so many false positives.  Use only on XML areas
+    GWPat2 = r"\bGW\b|G\.\s?W\." # Keep sep so not so many false positives.  Use only on XML areas
+    rgxSEPat = re.compile(SEPat, re.VERBOSE | re.IGNORECASE)
+    rgxSEPat2 = re.compile(SEPat2)
+    rgxGWPat2 = re.compile(GWPat2)
+
 #--------------------------------------------------------------------------------
 def processPage(page, pvol=None):
     """
