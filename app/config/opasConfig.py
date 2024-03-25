@@ -1131,11 +1131,6 @@ PDF_OTHER_STYLE = r"""
 MAXSRATIO = 0.9999999
 
 gBookCodes = ["CBK", "ZBK", "IPL", "NLP", "WMK", "SE", "GW"]
-gAnnualsThatAreTranslations = ["ANIJP-FR", "ANIJP-IT", "ANIJP-EL", "ANIJP-TR", "ANIJP-DE", "ANRP"]
-# Series Classic books with their own code, to add CBK as well.
-gBookClassicSeries = ["IPL", "NLP", "SE", "ZBK"]                       # 3-13-2008, added missing ZBK here.
-gJrnlNoIssueInfo = ["AOP", "PSC", "PY", "ANIJP-IT", "ANIJP-FR", "ANIJP-TR", "ANIJP-EL"]              # 2008-09-07, added to make sure a no-issues volume isn't given an issue number on the one issue each year.
-gSplitCodesForGetProximateArticle = ["CBK", "ZBK", "IPL", "NLP", "WMK", "SE", "GW"]
 gSplitBooks = {
     "IPL002" : 0,
     "IPL022" : 0,
@@ -1303,23 +1298,6 @@ gSplitBooks = {
     "NLP105": 0,
 }
 
-gDgrAbbr = {
-    "PHD" : "Ph.D.",
-    "MD"  : "M.D.",
-    "SJ"  : "S.J.",         # Jesuit priest, I think
-    "DSC" : "D.Sc.",
-    "RN"  : "R.N." ,
-    "DMH" : "DMH",
-    "DDS" : "D.D.S.",
-    "BS"  : "B.S." ,
-    "BA"  : "B.A." ,
-    "MS"  : "M.S." ,
-    "MA"  : "M.A." ,
-    "MB"  : "M.B." ,
-    "EDD" : "ED.D.",
-    "MPSY": "M.PSY.",
-    "MSW" : "M.S.W."
-}
 
 # REFTYPES
 REFBOOK                 =  "RefBook"
@@ -1434,54 +1412,6 @@ gClassicBookTOCList = {
     "ZBK.155.0000"  :  "ZBK.155.0000",  # split 2022-05-02
     "ZBK.156.0000"  :  "ZBK.156.0000",  # split 2022-05-02
     "ZBK.160.0001"  :  "ZBK.160.0001",
-}
-
-gSEIndex =         {
-    "SE.001.0000"   :  "SE.001.0000",
-    "SE.002.0000"   :  "SE.002.0000",
-    "SE.003.0000"   :  "SE.003.0000",
-    "SE.004.0000"   :  "SE.004.0000",
-    "SE.005.0000"   :  "SE.005.0000",
-    "SE.006.0000"   :  "SE.006.0000",
-    "SE.007.0000"   :  "SE.007.0000",
-    "SE.008.0000"   :  "SE.008.0000",
-    "SE.009.0000"   :  "SE.009.0000",
-    "SE.010.0000"   :  "SE.010.0000",
-    "SE.011.0000"   :  "SE.011.0000",
-    "SE.012.0000"   :  "SE.012.0000",
-    "SE.013.0000"   :  "SE.013.0000",
-    "SE.014.0000"   :  "SE.014.0000",
-    "SE.015.0000"   :  "SE.015.0000",
-    "SE.016.0000"   :  "SE.016.0000",
-    "SE.017.0000"   :  "SE.017.0000",
-    "SE.018.0000"   :  "SE.018.0000",
-    "SE.019.0000"   :  "SE.019.0000",
-    "SE.020.0000"   :  "SE.020.0000",
-    "SE.021.0000"   :  "SE.021.0000",
-    "SE.022.0000"   :  "SE.022.0000",
-    "SE.023.0000"   :  "SE.023.0000",
-    "SE.024.0000"   :  "SE.024.0000"
-}
-
-gGWIndex =         {
-    "GW.001.0000"   :  "GW.001.0000",
-    "GW.002.0000"   :  "GW.002.0000", # this is a combined vol 2/3
-    "GW.004.0000"   :  "GW.004.0000",
-    "GW.005.0000"   :  "GW.005.0000",
-    "GW.006.0000"   :  "GW.006.0000",
-    "GW.007.0000"   :  "GW.007.0000",
-    "GW.008.0000"   :  "GW.008.0000",
-    "GW.009.0000"   :  "GW.009.0000",
-    "GW.010.0000"   :  "GW.010.0000",
-    "GW.011.0000"   :  "GW.011.0000",
-    "GW.012.0000"   :  "GW.012.0000",
-    "GW.013.0000"   :  "GW.013.0000",
-    "GW.014.0000"   :  "GW.014.0000",
-    "GW.015.0000"   :  "GW.015.0000",
-    "GW.016.0000"   :  "GW.016.0000",
-    "GW.017.0000"   :  "GW.017.0000",
-    "GW.018.0000"   :  "GW.018.0000",
-    "GW.018S.0000"   :  "GW.018S.0000",
 }
 
 # -------------------------------------------------------------------------------------------------------
