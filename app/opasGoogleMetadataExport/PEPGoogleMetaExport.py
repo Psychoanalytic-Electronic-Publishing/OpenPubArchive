@@ -508,7 +508,7 @@ class PEPLibExport:
 
             # now take data and populate template
             artRef["AUTHORMARKUP"] = authorString
-            artRef[gConst.SOURCETITLEFULL] = gJrnlData.getJournalFull(jrnlcode) # TODO: Refactor to replace
+            # artRef[gConst.SOURCETITLEFULL] = gJrnlData.getJournalFull(jrnlcode) # TODO: Refactor to replace
             #print artRef[gConst.SOURCETITLEFULL]
 
             if aLoc.isBook():
