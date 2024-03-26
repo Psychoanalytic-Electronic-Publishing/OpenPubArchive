@@ -860,7 +860,7 @@ if __name__ == "__main__":
         # try book by book
         #enable this to try a specfic book
         #bookCodes = ["ZBK",]
-        books = list(gClassicBookTOCList.keys())
+        books = [] # TODO: retrieve all book codes from Solr
         #books = ["ZBK.002.0001"]
         totalCount = 0
         for bookID in books:
