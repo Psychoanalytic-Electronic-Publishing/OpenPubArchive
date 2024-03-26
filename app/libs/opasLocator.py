@@ -650,20 +650,6 @@ class Locator:
             return False
 
     #--------------------------------------------------------------------------------
-    def isSplitBookWithMainTOC(self, jrnlCode=None, jrnlVol=None):
-        """
-        Returns true if the jrnlCode and Vol are from a split book with a mainTOC
-        If it's already been checked, doesn't check again.
-        """
-        splitBookVal = self.__checkSplitBook(jrnlCode=jrnlCode, jrnlVol=jrnlVol)
-        # if the gSplitBooks value is 1, then it's a split book, but doesn't have a mainTOC
-        if splitBookVal==0:
-            # this is a split book with a 0000 mainTOC
-            return True
-        else:
-            return False
-
-    #--------------------------------------------------------------------------------
     def isSplitBook(self, jrnlCode=None, jrnlVol=None):
         """
         Returns true if the jrnlCode and Vol are from a split book
@@ -731,11 +717,9 @@ class Locator:
         retVal = False
         if self.noStartingPageException != True:
             if self.pgStart == 1 or self.pgStart == 0:
-                if self.isSplitBookWithMainTOC():
+                if self.isSplitBook():
                     # this is an exception
                     retVal = opasDocuments.PageNumber(0)
-                else:
-                    retVal = opasDocuments.PageNumber(1)		# keep an eye on this one!
 
         #print ("EXCEPTION CHECK: ", self.jrnlCode, self.pgStart)
         if self.jrnlCode == "SE":
