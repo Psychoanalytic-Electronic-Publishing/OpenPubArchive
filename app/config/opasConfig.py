@@ -1129,8 +1129,6 @@ PDF_OTHER_STYLE = r"""
 
 # MAXSRATIO is the highest sRatio, since 1 is reserved.
 MAXSRATIO = 0.9999999
-
-gBookCodes = ["CBK", "ZBK", "IPL", "NLP", "WMK", "SE", "GW"]
 gSplitBooks = {
     "IPL002" : 0,
     "IPL022" : 0,

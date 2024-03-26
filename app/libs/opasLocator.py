@@ -26,7 +26,7 @@ gDbg1 = False
 import copy
 import re
 
-from opasConfig import gBookCodes, gSplitBooks, REFBOOK, REFBOOKSERIES, REFBOOKSERIESARTICLE, REFBOOKARTICLE, REFJOURNALARTICLE
+from opasConfig import BOOK_CODES_ALL, gSplitBooks, REFBOOK, REFBOOKSERIES, REFBOOKSERIESARTICLE, REFBOOKARTICLE, REFJOURNALARTICLE
 # from pydantic import BaseModel, Field, ValidationError, validator, Extra
 
 import PEPJournalData
@@ -644,7 +644,7 @@ class Locator:
         """
         Returns true if the locator is from a book
         """
-        if self.jrnlCode in gBookCodes:
+        if self.jrnlCode in BOOK_CODES_ALL:
             return True
         else:
             return False
