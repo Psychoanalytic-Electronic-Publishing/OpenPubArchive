@@ -2545,83 +2545,6 @@ def metadata_get_next_and_prev_articles(art_id=None,
                 continue
     
     return prev_art, match_art, next_art
-#-----------------------------------------------------------------------------
-def metadata_get_sourcecodes(source_type=None):
-    """
-    >>> all = metadata_get_sourcecodes()
-    >>> all_count = len(all)
-    >>> all_count > 70
-    True
-    
-    """
-    ret_val = None
-    distinct_return = "art_sourcecode"
-    
-    query = "bk_subdoc:false"
-
-    if source_type is not None:
-        query += f' AND sourcetype:"{source_type}"'
-
-    try:
-        logger.info(f"Solr Query: q={query}")
-        facet_fields = ["art_sourcecode"]
-        facet_pivot_fields = ["art_sourcecode"]
-        
-        args = {
-            "fl": distinct_return,
-            "fq": "*:*",
-            "sort": "art_sourcecode asc",
-            "facet": "on", 
-            "facet.fields" : facet_fields, 
-            "facet.pivot" : facet_pivot_fields,
-            "facet.mincount" : 1,
-            "facet.limit": opasConfig.MAX_SOURCE_COUNT,
-            "facet.sort" : "art_sourcecode asc", 
-        }
-
-        results = solr_docs2.search(query, **args)
-        ret_val = [n["value"] for n in results.facets["facet_pivot"]["art_sourcecode"]]
-        logger.info(f"Solr Query: q={query}")
-
-    except Exception as e:
-        err_info = pysolrerror_processing(e)
-        logger.error(f"SourceCodeValues {err_info.httpcode}. Query: {query} Error: {err_info.error_description}")
-
-    return ret_val
-
-def metadata_get_split_books():
-    """
-    Fetches art_ids of split books, defined as books with an art_type of TOC.
-    
-    Returns a list of art_ids for books that meet the criteria.
-    
-    Example usage:
-    >>> split_books = metadata_get_split_books()
-    >>> len(split_books) <= 100
-    True
-    """
-    ret_val = []
-    query = 'sourcetype:book AND art_type:TOC'
-    
-    try:
-        logger.info(f"Solr Query: q={query}")
-        args = {
-            "fl": "art_id",
-            "fq": "*:*",
-            "rows": 1000,
-            "sort": "art_id asc",
-        }
-
-        results = solr_docs2.search(query, **args)
-        ret_val = [doc["art_id"] for doc in results.docs]
-        logger.info(f"Solr Query: q={query} returned {len(ret_val)} records")
-
-    except Exception as e:
-        err_info = pysolrerror_processing(e)
-        logger.error(f"SplitBooks {err_info.httpcode}. Query: {query} Error: {err_info.error_description}")
-
-    return {item: 0 for item in ret_val}
-
 
 #-----------------------------------------------------------------------------
 def metadata_get_next_and_prev_vols(source_code=None,
@@ -2867,6 +2790,9 @@ def metadata_get_years(source_code=None,
     return ret_val
 #-----------------------------------------------------------------------------
 
+from opasMetadataCache import metadata_cache
+cached_metadata = metadata_cache.get_cached_data()
+
 #-----------------------------------------------------------------------------
 def metadata_get_volumes(source_code=None,
                          source_type=None,
@@ -2958,7 +2884,7 @@ def metadata_get_volumes(source_code=None,
                     count = m3["count"]
                     pep_code_vol = PEPCode + vol
                     # if it's a journal, Supplements are not a separate vol, they are an issue.
-                    if pep_code_vol[-1] == "S" and journal_code not in dynamicConfig.BOOK_CODES_ALL:
+                    if pep_code_vol[-1] == "S" and journal_code not in cached_metadata["BOOK_CODES_ALL"]:
                         pep_code_vol = pep_code_vol[:-1]
                     cur_code = volume_dup_check.get(pep_code_vol)
                     if cur_code is None:

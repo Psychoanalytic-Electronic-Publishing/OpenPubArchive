@@ -147,6 +147,8 @@ from opasPySolrLib import search_text_qs # , search_text
 import opasPDFStampCpyrght
 import opasCacheSupport
 from opasArticleIDSupport import ArticleID
+from opasMetadataCache import metadata_cache
+cached_metadata = metadata_cache.get_cached_data()
 expert_pick_image = ["", ""]
 
 # Check text server version
@@ -155,8 +157,8 @@ text_server_url = localsecrets.SOLRURL
 ocd = opasCentralDBLib.opasCentralDB()
 database_update_date = ocd.get_update_date_database()
 ocd = None
-all_source_codes = opasPySolrLib.metadata_get_sourcecodes()
-all_source_codes.append("OAJPSI")
+all_source_codes = cached_metadata["ALL_CODES"]
+# all_source_codes.append("OAJPSI")
 
 PARAMS = {'wt':'json'}
 url = f"{localsecrets.SOLRURL}admin/info/system"

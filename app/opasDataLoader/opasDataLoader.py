@@ -151,6 +151,8 @@ import opasFileSupport
 import opasAPISupportLib
 import opasDataLoaderIJPOpenSupport
 import opasPySolrLib
+from opasMetadataCache import metadata_cache
+cached_metadata = metadata_cache.get_cached_data()
 
 if sys.version_info[0] < 3:
     raise Exception("Must be using Python 3")

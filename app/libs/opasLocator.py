@@ -26,7 +26,7 @@ gDbg1 = False
 import copy
 import re
 
-from opasConfig import BOOK_CODES_ALL, gSplitBooks, REFBOOK, REFBOOKSERIES, REFBOOKSERIESARTICLE, REFBOOKARTICLE, REFJOURNALARTICLE
+from opasConfig import REFBOOK, REFBOOKSERIES, REFBOOKSERIESARTICLE, REFBOOKARTICLE, REFJOURNALARTICLE
 # from pydantic import BaseModel, Field, ValidationError, validator, Extra
 
 import PEPJournalData
@@ -38,6 +38,9 @@ import opasLocalID
 import opasDocuments
 import opasCentralDBLib
 ocd = opasCentralDBLib.opasCentralDB()
+
+from opasMetadataCache import metadata_cache
+cached_metadata = metadata_cache.get_cached_data()
 
 # set to 1 for doctests only
 
@@ -644,7 +647,7 @@ class Locator:
         """
         Returns true if the locator is from a book
         """
-        if self.jrnlCode in BOOK_CODES_ALL:
+        if self.jrnlCode in cached_metadata["BOOK_CODES_ALL"]:
             return True
         else:
             return False
@@ -704,7 +707,7 @@ class Locator:
             logger.error(f"Severe - Locator - {errMsg} ")
 
 
-        retVal = gSplitBooks.get("%s%s" % (jrnlCode, jrnlVol), None)
+        retVal = cached_metadata["gSplitBooks"].get("%s%s" % (jrnlCode, jrnlVol), None)
         logger.debug("Check Split Book: %s%s (retval: %s)" % (jrnlCode, jrnlVol, retVal))
 
         return retVal

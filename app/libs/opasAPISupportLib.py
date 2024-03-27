@@ -91,6 +91,9 @@ from opasPySolrLib import search_text, search_text_qs
 # import opasProductLib
 import opasArticleIDSupport
 
+from opasMetadataCache import metadata_cache
+cached_metadata = metadata_cache.get_cached_data()
+
 # count_anchors = 0
 
 def has_data(str):
@@ -609,7 +612,7 @@ def metadata_get_source_info(src_type=None, # opasConfig.VALS_PRODUCT_TYPES
                 source_info_listitems.append(item)
     else:
         # book series workaround...any code not enabled in the database, i.e., SE/GW should not ever be getting do
-        if src_code in opasConfig.BOOK_CODES_ALL:  # ("ZBK", "IPL", "NLP", "SE", "GW"):
+        if src_code in cached_metadata["BOOK_CODES_ALL"]:
             #print (f"Book Source code workaround--not enabled in DB: {src_code}")
             try:
                 item = models.SourceInfoListItem( sourceType = "book series",
@@ -636,7 +639,7 @@ def metadata_get_source_info(src_type=None, # opasConfig.VALS_PRODUCT_TYPES
                 #logger.error(e.json())
                 err = 1
         
-        elif src_code in opasConfig.VIDEOSTREAM_CODES_ALL:  # workaround for getting codes 
+        elif src_code in cached_metadata["VIDEOSTREAM_CODES_ALL"]:  # workaround for getting codes 
             try:
                 item = models.SourceInfoListItem( sourceType = "videostream series",
                                                   PEPCode = src_code,
