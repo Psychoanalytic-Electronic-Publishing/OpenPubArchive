@@ -57,6 +57,8 @@ sys.path.append('../config')
 
 import opasConfig
 import localsecrets
+from opasMetadataCache import metadata_cache
+cached_metadata = metadata_cache.get_cached_data()
 
 import logging
 logger = logging.getLogger(__name__)
@@ -603,11 +605,11 @@ class opasCentralDB(object):
                 journal_clause = ""
             
             if source_type == "journals":
-                doc_type_clause = f" AND source_code NOT IN {opasConfig.ALL_EXCEPT_JOURNAL_CODES}" 
+                doc_type_clause = f" AND source_code NOT IN {cached_metadata['ALL_EXCEPT_JOURNAL_CODES']}" 
             elif source_type == "books":
-                doc_type_clause = f" AND source_code IN {opasConfig.BOOK_CODES_ALL}"
+                doc_type_clause = f" AND source_code IN {cached_metadata['BOOK_CODES_ALL']}"
             elif source_type == "videos":
-                doc_type_clause = f" AND source_code IN {opasConfig.VIDOSTREAM_CODES_ALL}"
+                doc_type_clause = f" AND source_code IN {cached_metadata['VIDEOSTREAM_CODES_ALL']}"
             else:
                 doc_type_clause = ""  # everything
 
@@ -768,11 +770,11 @@ class opasCentralDB(object):
                 source_code_clause = ""
 
             if source_type == "journals":
-                doc_type_clause = f" AND source_code NOT IN {opasConfig.ALL_EXCEPT_JOURNAL_CODES}" 
+                doc_type_clause = f" AND source_code NOT IN {cached_metadata['ALL_EXCEPT_JOURNAL_CODES']}" 
             elif source_type == "books":
-                doc_type_clause = f" AND source_code IN {opasConfig.BOOK_CODES_ALL}"
+                doc_type_clause = f" AND source_code IN {cached_metadata['BOOK_CODES_ALL']}"
             elif source_type == "videos":
-                doc_type_clause = f" AND source_code IN {opasConfig.VIDEOSTREAM_CODES_ALL}"
+                doc_type_clause = f" AND source_code IN {cached_metadata['VIDEOSTREAM_CODES_ALL']}"
             else:
                 doc_type_clause = ""  # everything
 

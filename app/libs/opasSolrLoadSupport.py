@@ -50,9 +50,6 @@ import logging
 logger = logging.getLogger(__name__)
 from loggingDebugStream import log_everywhere_if    # log as usual, but if first arg is true, also put to stdout for watching what's happening
 
-# new for processing code
-import PEPJournalData
-jrnlData = PEPJournalData.PEPJournalData()
 # import modelsOpasCentralPydantic
 
 import PEPGlossaryRecognitionEngine

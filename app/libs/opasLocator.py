@@ -26,17 +26,11 @@ gDbg1 = False
 import copy
 import re
 
-from opasConfig import gBookCodes, gSplitBooks, REFBOOK, REFBOOKSERIES, REFBOOKSERIESARTICLE, REFBOOKARTICLE, REFJOURNALARTICLE
+from opasConfig import REFBOOK, REFBOOKSERIES, REFBOOKSERIESARTICLE, REFBOOKARTICLE, REFJOURNALARTICLE
 # from pydantic import BaseModel, Field, ValidationError, validator, Extra
 
 import PEPJournalData
 import opasXMLSplitBookSupport
-
-global gJrnlData
-try:  # see if it's been defined.
-    a = gJrnlData
-except:
-    gJrnlData = PEPJournalData.PEPJournalData()
 
 import opasGenSupportLib as opasgenlib
 import opasDocuments
@@ -44,6 +38,9 @@ import opasLocalID
 import opasDocuments
 import opasCentralDBLib
 ocd = opasCentralDBLib.opasCentralDB()
+
+from opasMetadataCache import metadata_cache
+cached_metadata = metadata_cache.get_cached_data()
 
 # set to 1 for doctests only
 
@@ -472,10 +469,6 @@ class Locator:
             self.pgVar = str(ord(self.pgVar) - ord("A"))
             logger.info(f"Old Style Variant Requested: {self.pgVar}")
 
-        if (self.jrnlVol is None and self.jrnlYear is not None and self.jrnlCode is None):
-            # look this up
-            self.jrnlVol, self.jrnlVolList = gJrnlData.getVol(self.jrnlCode, self.jrnlYear)
-
         self.__exceptions() # Adjustments for exceptions
 
     #--------------------------------------------------------------------------------
@@ -508,31 +501,6 @@ class Locator:
 
         # return a base code, either of the specified locator, or the forced parameter version
         return "%s%s" % (jrnlCode, jrnlVol.volID())
-
-    #--------------------------------------------------------------------------------
-    def getJournalAndYear(self):
-        """
-        Return jrnlcode and year as an ID
-        """
-        retVal = ""
-        if self.jrnlYear is None or self.jrnlYear == 0:
-            if (self.jrnlVol is not None and self.jrnlCode is not None):
-                self.jrnlYear = gJrnlData.getYear(self.jrnlCode, self.jrnlVol)
-            elif self.jrnlVol is not None:
-                self.jrnlYear = self.jrnlVol
-            else:
-                raise "No data to calc year %s" % str(self)
-
-            if self.jrnlYear is None or self.jrnlYear == 0:
-                artIDParts = self.splitArticleID(includeLocalID=0)
-                retVal =  "%s.%s" % (self.jrnlCode, artIDParts[1])
-            else:
-                retVal =  "%s.%s" % (self.jrnlCode, self.jrnlYear)
-
-        else:
-            retVal =  "%s.%s" % (self.jrnlCode, self.jrnlYear)
-
-        return retVal
 
     #--------------------------------------------------------------------------------
     def isVariant(self):
@@ -679,21 +647,7 @@ class Locator:
         """
         Returns true if the locator is from a book
         """
-        if self.jrnlCode in gBookCodes:
-            return True
-        else:
-            return False
-
-    #--------------------------------------------------------------------------------
-    def isSplitBookWithMainTOC(self, jrnlCode=None, jrnlVol=None):
-        """
-        Returns true if the jrnlCode and Vol are from a split book with a mainTOC
-        If it's already been checked, doesn't check again.
-        """
-        splitBookVal = self.__checkSplitBook(jrnlCode=jrnlCode, jrnlVol=jrnlVol)
-        # if the gSplitBooks value is 1, then it's a split book, but doesn't have a mainTOC
-        if splitBookVal==0:
-            # this is a split book with a 0000 mainTOC
+        if self.jrnlCode in cached_metadata["BOOK_CODES_ALL"]:
             return True
         else:
             return False
@@ -753,7 +707,7 @@ class Locator:
             logger.error(f"Severe - Locator - {errMsg} ")
 
 
-        retVal = gSplitBooks.get("%s%s" % (jrnlCode, jrnlVol), None)
+        retVal = cached_metadata["gSplitBooks"].get("%s%s" % (jrnlCode, jrnlVol), None)
         logger.debug("Check Split Book: %s%s (retval: %s)" % (jrnlCode, jrnlVol, retVal))
 
         return retVal
@@ -766,11 +720,9 @@ class Locator:
         retVal = False
         if self.noStartingPageException != True:
             if self.pgStart == 1 or self.pgStart == 0:
-                if self.isSplitBookWithMainTOC():
+                if self.isSplitBook():
                     # this is an exception
                     retVal = opasDocuments.PageNumber(0)
-                else:
-                    retVal = opasDocuments.PageNumber(1)		# keep an eye on this one!
 
         #print ("EXCEPTION CHECK: ", self.jrnlCode, self.pgStart)
         if self.jrnlCode == "SE":
@@ -922,27 +874,6 @@ class Locator:
                 self.prePrefix = opasgenlib.default(lm.group("preprefix"), "")
                 self.prefix = opasgenlib.default(lm.group("pre"), "")
                 self.suffix = opasgenlib.default(lm.group("post"), "")
-
-        if self.jrnlYear is not None:
-            self.jrnlVol, self.jrnlVolList = gJrnlData.getVol(self.jrnlCode, self.jrnlYear)
-
-            if self.jrnlVol is None:
-                log_everywhere_if(True, "error", f"Locator (decompile): Journal Year/Volume Exception. ('{theStr}')")
-                retVal = 0
-        else:
-            if self.jrnlVol is not None:
-                self.jrnlYear = gJrnlData.getYear(self.jrnlCode, self.jrnlVol)
-
-                if self.jrnlVol.volSuffix != "" and self.jrnlVol.volSuffix != "S": # not for Supplements
-                    jrnlIss = ord(self.jrnlVol.volSuffix[0]) - ord("A") + 1
-                    try:
-                        if jrnlIss > 0 and jrnlIss < 8: # only allow 8 issues, otherwise must be "special" like Supplement
-                            self.jrnlIss = jrnlIss
-                    except Exception as e:
-                        log_everywhere_if(True, "error", f"Journal Issue error; {e}")
-                        retVal = 0
-                        
-
 
         self.__standardize()
         # validate if it's not a TOJ locator
@@ -1136,25 +1067,6 @@ def baseOfBaseCode(baseCode):
     """
     retVal = re.split("\.|[0-9]", baseCode.upper())
     return retVal[0]
-
-#--------------------------------------------------------------------------------
-def baseCodeToJournalName(baseCode):
-    """
-    Return the jrnl name for a baseCode
-
-    >>> print (baseCodeToJournalName("ANIJP-IT.2006"))
-    Annata Psicoanalitica Internazionale
-    >>> print (baseCodeToJournalName("anijp-fr.2006"))
-    Annee Psychanalytique Internationale
-
-    """
-    base = baseOfBaseCode(baseCode)
-    retVal = gJrnlData.jrnlFull.get(base, None)
-    if retVal is None:
-        print("Can't find long name for baseCode: %s and base: %s" % (baseCode, base))
-        raise Exception(("Stopped!"))
-
-    return retVal
 
 #--------------------------------------------------------------------------------
 def isLocator(idString):

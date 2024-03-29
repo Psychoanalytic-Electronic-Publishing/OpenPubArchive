@@ -25,7 +25,6 @@ import pymysql
 #import libPEPBiblioDB
 #import PEPArticleListDB
 #import PEPLocator
-#import PEPJournalData
 #import sciDocuments
 #from PEPGlobals import *
 #import MySQLdb
@@ -509,7 +508,7 @@ class PEPLibExport:
 
             # now take data and populate template
             artRef["AUTHORMARKUP"] = authorString
-            artRef[gConst.SOURCETITLEFULL] = gJrnlData.getJournalFull(jrnlcode)
+            # artRef[gConst.SOURCETITLEFULL] = gJrnlData.getJournalFull(jrnlcode) # TODO: Refactor to replace
             #print artRef[gConst.SOURCETITLEFULL]
 
             if aLoc.isBook():
@@ -861,7 +860,7 @@ if __name__ == "__main__":
         # try book by book
         #enable this to try a specfic book
         #bookCodes = ["ZBK",]
-        books = list(gClassicBookTOCList.keys())
+        books = [] # TODO: retrieve all book codes from Solr
         #books = ["ZBK.002.0001"]
         totalCount = 0
         for bookID in books:
