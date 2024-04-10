@@ -3,7 +3,7 @@ data "aws_ami" "amazon" {
 
   filter {
     name   = "image-id"
-    values = ["ami-0005e0cfe09cc9050"]
+    values = ["ami-0a252cea0ff9a3e6c"]
   }
 
   filter {
