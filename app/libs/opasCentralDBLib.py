@@ -73,6 +73,8 @@ import time
 from passlib.context import CryptContext
 import mysql.connector
 import json
+import csv
+from io import StringIO
 global SERVER_SETTINGS
 
 gDbg3 = False  # watch mysql connections
@@ -2879,6 +2881,40 @@ class opasCentralDB(object):
             ret_val = True
             
         return ret_val  # return True for success
+
+    def reload_api_productbase_from_csv(self, csv_text):
+        """
+        Deletes all items from the api_productbase table and reloads the content from a specified CSV file,
+        with the operation wrapped in a transaction to ensure atomicity.
+        
+        Parameters:
+        - csv_text: The text content of the CSV file.
+        
+        Returns:
+        - A message indicating success or describing the failure.
+        """
+        try:
+            self.open_connection(caller_name="reload_api_productbase_from_csv")
+            cursor = self.db.cursor()
+            
+          
+            cursor.execute("DELETE FROM api_productbase")
+            rows_deleted = cursor.rowcount
+
+            csv_reader = csv.DictReader(StringIO(csv_text))
+            for row in csv_reader:
+                processed_values = [value if value.strip() != '' else None for value in row.values()]
+                columns = ', '.join([f"`{column}`" for column in row.keys()])
+                placeholders = ', '.join(['%s'] * len(row))
+                sql = f"INSERT INTO api_productbase ({columns}) VALUES ({placeholders})"
+                cursor.execute(sql, processed_values)
+            
+            self.db.commit()
+            rows_inserted = cursor.rowcount
+        finally:
+            if cursor:
+                cursor.close()
+            self.close_connection(caller_name="reload_api_productbase_from_csv")
 
 #================================================================================================================================
 
