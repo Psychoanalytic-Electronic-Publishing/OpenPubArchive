@@ -977,9 +977,6 @@ async def admin_reports(response: Response,
                 for row in results:
                     csvwriter.writerow([', '.join(item) if isinstance(item, set) else (str(item) if item is not None else '') for item in row])
 
-            if report == models.ReportTypeEnum.productTable:
-                ocd.reload_api_productbase_from_csv(csv_filename)
-
             ret_val = FileResponse(path=csv_filename, filename=csv_filename, media_type='text/csv')
         else:
             # this comes back as a list of ReportListItems
