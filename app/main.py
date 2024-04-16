@@ -639,6 +639,22 @@ async def upload_process_productbase_csv(
     csv_text = contents.decode('utf-8')
     ocd.reload_api_productbase_from_csv(csv_text)
 
+    r = requests.post(
+        f"{localsecrets.PADS_BASE_URL}/RepopulateAllPEPWebContent",
+        headers={"UserAlertSecurityKey": localsecrets.PADS_API_KEY}
+    )
+
+    resp = r.json()
+
+    if "failed" in resp["ReasonDescription"].lower():
+        raise HTTPException(
+            status_code=httpCodes.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"{resp['ReasonDescription']}"
+        )
+
+
+    return 
+
 
 #-----------------------------------------------------------------------------
 @app.get("/v2/Admin/Reports/{report}", response_model=models.Report, tags=["Admin"], summary=opasConfig.ENDPOINT_SUMMARY_REPORTS)
