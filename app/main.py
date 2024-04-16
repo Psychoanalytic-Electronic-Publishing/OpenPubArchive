@@ -102,12 +102,13 @@ import re
 import wget
 import io
 import urllib.parse
+import csv
 import random
 
 from urllib import parse
 
 import uvicorn
-from fastapi import FastAPI, Query, Body, Path, Header, Security, Depends, HTTPException # File, Form, UploadFile, Cookie
+from fastapi import FastAPI, Query, Body, Path, Header, Security, Depends, HTTPException, File, UploadFile # File, Form, UploadFile, Cookie
 from fastapi.openapi.utils import get_openapi
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.security.api_key import APIKeyQuery, APIKeyCookie, APIKeyHeader, APIKey
@@ -606,6 +607,55 @@ async def admin_set_loglevel(response: Response,
             logger.info(ret_val) 
     return ret_val
 
+@app.post("/v2/Admin/UpdateProductbase/", tags=["Admin"], summary="Upload and process product base CSV file", status_code=201)
+async def upload_process_productbase_csv(
+    response: Response, 
+    file: UploadFile = File(..., description="CSV file containing product base data"),
+    request: Request=Query(None, title=opasConfig.TITLE_REQUEST, description=opasConfig.DESCRIPTION_REQUEST),
+    client_id: int = Depends(get_client_id),
+    client_session: str = Depends(get_client_session),
+    api_key: APIKey = Depends(get_api_key)
+):
+    caller_name = "[v2/Admin/UpdateProductbase]"
+
+    opasDocPermissions.verify_header(request, "UpdateProductbase") # for debugging client call
+    log_endpoint(request, client_id=client_id, session_id=client_session, level="debug")
+
+    ocd, session_info = opasDocPermissions.get_session_info(request, response, session_id=client_session, client_id=client_id, caller_name=caller_name)
+    if session_info.admin != True:
+        # watch to see if PaDS is using the reports as an admin or non-admin user, if admin, change reports to admin only
+        ret_val = f"Update productbase request by non-admin user ({session_info.username} id: {session_info.session_id})."
+        logger.error(ret_val)
+        raise HTTPException(
+            status_code=httpCodes.HTTP_401_UNAUTHORIZED, 
+            detail=ret_val
+        )       
+    else:
+        msg = f"Update productbase request by admin user ({session_info.username}) id: {session_info.session_id})."
+        logger.info(msg)
+        if opasConfig.PADS_INFO_TRACE: print (msg)
+
+    contents = file.file.read()
+    csv_text = contents.decode('utf-8')
+    ocd.reload_api_productbase_from_csv(csv_text)
+
+    r = requests.post(
+        f"{localsecrets.PADS_BASE_URL}/RepopulateAllPEPWebContent",
+        headers={"UserAlertSecurityKey": localsecrets.PADS_API_KEY}
+    )
+
+    resp = r.json()
+
+    if "failed" in resp["ReasonDescription"].lower():
+        raise HTTPException(
+            status_code=httpCodes.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"{resp['ReasonDescription']}"
+        )
+
+
+    return 
+
+
 #-----------------------------------------------------------------------------
 @app.get("/v2/Admin/Reports/{report}", response_model=models.Report, tags=["Admin"], summary=opasConfig.ENDPOINT_SUMMARY_REPORTS)
 async def admin_reports(response: Response, 
@@ -844,6 +894,46 @@ async def admin_reports(response: Response,
                   "earliest year", 
                   "latest year"
                   ]
+    elif report == models.ReportTypeEnum.productTable:
+        report_view = "api_productbase"
+        orderby_clause = f"ORDER BY basecode {sortorder}"
+        header = ["basecode",
+                "articleID",
+                "active",
+                "splitbook",
+                "pep_class",
+                "pep_class_qualifier",
+                "accessClassification",
+                "wall",
+                "mainTOC",
+                "first_author",
+                "author",
+                "title",
+                "bibabbrev",
+                "ISSN",
+                "ISBN-10",
+                "ISBN-13",
+                "pages",
+                "Comment",
+                "pepcode",
+                "publisher",
+                "jrnl",
+                "pub_year",
+                "start_year",
+                "end_year",
+                "pep_url",
+                "language",
+                "updated",
+                "pepversion",
+                "landing_page",
+                "coverage_notes",
+                "duplicate",
+                "google_books_link",
+                "charcount_stat_name",
+                "charcount_stat_start_year",
+                "charcount_stat_group_str",
+                "charcount_stat_group_count"
+                ]
     else:
         report_view = None
 
@@ -894,14 +984,16 @@ async def admin_reports(response: Response,
             # Download CSV of selected set.  Returns only response with download, not usual documentList
             #   response to client
             results = ocd.get_select_as_list(select)
-            df = pd.DataFrame(results)
-            stream = io.StringIO()
-            df.to_csv(stream, header=header, index = False)
-            response = StreamingResponse(iter([stream.getvalue()]),
-                                         media_type="text/csv"
-                                               )
-            response.headers["Content-Disposition"] = f"attachment; filename={report_view}.csv"
-            ret_val = response
+
+            csv_filename = f"{report_view}.csv"
+            with open(csv_filename, 'w', newline='', encoding='utf-8') as csvfile:
+                csvwriter = csv.writer(csvfile)
+                
+                csvwriter.writerow(header)
+                for row in results:
+                    csvwriter.writerow([', '.join(item) if isinstance(item, set) else (str(item) if item is not None else '') for item in row])
+
+            ret_val = FileResponse(path=csv_filename, filename=csv_filename, media_type='text/csv')
         else:
             # this comes back as a list of ReportListItems
             ts = time.time()
