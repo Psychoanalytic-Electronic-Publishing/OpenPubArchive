@@ -934,6 +934,36 @@ async def admin_reports(response: Response,
                 "charcount_stat_group_str",
                 "charcount_stat_group_count"
                 ]
+    elif report == models.ReportTypeEnum.documentReferences:
+        report_view ="api_biblioxml2"
+        orderby_clause = f"ORDER BY art_id {sortorder}"
+        standard_filter = f"art_id = '{matchstr}' "
+        header = [
+            "art_id",
+            "ref_local_id",
+            "art_year",
+            "ref_rx",
+            "ref_rx_confidence",
+            "ref_rxcf",
+            "ref_rxcf_confidence",
+            "ref_sourcecode",
+            "ref_link_source",
+            "ref_authors",
+            "ref_title",
+            "ref_text",
+            "ref_sourcetype",
+            "ref_sourcetitle",
+            "ref_authors_xml",
+            "ref_xml",
+            "ref_pgrg",
+            "ref_doi",
+            "ref_year",
+            "ref_year_int",
+            "ref_volume",
+            "ref_publisher",
+            "skip_incremental_scans",
+            "last_update"
+            ]
     else:
         report_view = None
 
