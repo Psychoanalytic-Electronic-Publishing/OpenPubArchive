@@ -625,8 +625,6 @@ def update_bincs(parsed_xml, artInfo, ocd, pretty_print=False, verbose=False):
                         if base_info is not None:
                             parsed_ref.attrib["rx"] = locator.articleID()
                             search_str = f"//binc[@id='{ref_id}']"
-                            msg = f"\t\tMatched Book {match_val}. {opasxmllib.xml_xpath_return_xmlstringlist(parsed_xml, search_str)[0]}"
-                            log_everywhere_if(verbose, level="debug", msg=msg)
                         else:
                             log_everywhere_if(verbose, level="debug", msg=f"didn't find this: {bib_entry.ref_sourcecode}")
                         
