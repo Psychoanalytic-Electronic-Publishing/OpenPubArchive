@@ -607,12 +607,12 @@ async def admin_set_loglevel(response: Response,
             logger.info(ret_val) 
     return ret_val
 
-@app.post("/v2/Admin/CsvImport", tags=["Admin"], summary="Upload and process CSV files", status_code=201)
+@app.post("/v2/Admin/CsvImport", tags=["Admin"], summary="Upload and process CSV file imports", status_code=201)
 async def upload_process_productbase_csv(
     response: Response, 
     file: UploadFile = File(..., description="CSV file containing product base data"),
     request: Request=Query(None, title=opasConfig.TITLE_REQUEST, description=opasConfig.DESCRIPTION_REQUEST),
-    document_type: models.ReportTypeEnum=Query(None title=opasConfig.TITLE_REPORT_REQUESTED, description=opasConfig.DESCRIPTION_REPORT_REQUESTED),
+    document_type: models.ReportTypeEnum=Query(None, title=opasConfig.TITLE_REPORT_REQUESTED, description=opasConfig.DESCRIPTION_REPORT_REQUESTED),
     client_id: int = Depends(get_client_id),
     client_session: str = Depends(get_client_session),
     api_key: APIKey = Depends(get_api_key)
@@ -639,7 +639,7 @@ async def upload_process_productbase_csv(
     contents = file.file.read()
     csv_text = contents.decode('utf-8')
 
-    if document_type == models.ReportTypeEnum.productBase:
+    if document_type == models.ReportTypeEnum.productTable:
         ocd.reload_api_productbase_from_csv(csv_text)
         r = requests.post(
             f"{localsecrets.PADS_BASE_URL}/RepopulateAllPEPWebContent",
@@ -648,7 +648,7 @@ async def upload_process_productbase_csv(
         
         resp = r.json()
 
-        if "failed" in resp["ReasonDescription"].lower():
+        if resp.get("ReasonDescription") and "failed" in resp["ReasonDescription"].lower():
             raise HTTPException(
                 status_code=httpCodes.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"{resp['ReasonDescription']}"
