@@ -655,6 +655,8 @@ async def upload_process_productbase_csv(
         )
 
         return resp
+    elif document_type == models.ReportTypeEnum.documentReferences:
+        ocd.update_document_references_from_csv(csv_text)
     else:
         raise HTTPException(
             status_code=httpCodes.HTTP_400_BAD_REQUEST,
@@ -966,6 +968,7 @@ async def admin_reports(response: Response,
             "ref_year_int",
             "ref_volume",
             "ref_publisher",
+            "skip_reason",
             "skip_incremental_scans",
             "last_update"
             ]
