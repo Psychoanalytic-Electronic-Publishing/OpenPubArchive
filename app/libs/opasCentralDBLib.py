@@ -2916,6 +2916,60 @@ class opasCentralDB(object):
                 cursor.close()
             self.close_connection(caller_name="reload_api_productbase_from_csv")
 
+
+
+    def update_document_references_from_csv(self, csv_text):
+        """
+        Updates entries in the api_biblioxml2 table from a provided CSV file, matching on primary and secondary keys.
+        Non-matching rows are skipped. This function uses 'art_id' as the primary key and 'ref_local_id' as the secondary key
+        to identify the correct records to update.
+
+        Parameters:
+        - csv_text: The text content of the CSV file.
+
+        Returns:
+        - A message indicating the number of rows updated or describing the failure.
+        """
+        try:
+            self.open_connection(caller_name="update_document_references_from_csv")
+            cursor = self.db.cursor()
+            
+            csv_reader = csv.DictReader(StringIO(csv_text))
+            rows_updated = 0
+
+            primary_key_column = 'art_id'
+            secondary_key_column = 'ref_local_id'
+
+            for row in csv_reader:
+                # Prepare values and filter out keys for updating columns
+                processed_values = []
+                update_parts = []
+                for column, value in row.items():
+                    logger.error(f"Column: {column}, Value: {value}")
+                    logger.error(f"Value type: {type(value)}")
+                    if column not in [primary_key_column, secondary_key_column]:
+                        processed_values.append(value if value.strip() != '' else None)
+                        update_parts.append(f"`{column}` = %s")
+
+                update_columns = ', '.join(update_parts)
+                sql = f"UPDATE api_biblioxml2 SET {update_columns} WHERE `{primary_key_column}` = %s AND `{secondary_key_column}` = %s"
+
+                # Append primary and secondary key values for the WHERE clause
+                execute_values = processed_values + [row[primary_key_column], row[secondary_key_column]]
+
+                # Ensure all None values are converted to SQL NULL for correct execution
+                execute_values = [None if v is None else v for v in execute_values]
+                cursor.execute(sql, execute_values)
+                rows_updated += cursor.rowcount
+            
+            self.db.commit()
+        finally:
+            if cursor:
+                cursor.close()
+            self.close_connection(caller_name="update_document_references_from_csv")
+
+
+
 #================================================================================================================================
 
 if __name__ == "__main__":

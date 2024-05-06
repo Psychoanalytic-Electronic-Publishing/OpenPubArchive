@@ -4,7 +4,7 @@ resource "aws_db_instance" "mysql" {
   identifier            = var.env
   db_name               = "opascentral"
   engine                = "mysql"
-  engine_version        = "8.0.28"
+  engine_version        = "8.0.35"
   instance_class        = var.instance_class
   username              = var.username
   password              = var.password

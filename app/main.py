@@ -607,54 +607,61 @@ async def admin_set_loglevel(response: Response,
             logger.info(ret_val) 
     return ret_val
 
-@app.post("/v2/Admin/UpdateProductbase/", tags=["Admin"], summary="Upload and process product base CSV file", status_code=201)
+@app.post("/v2/Admin/CsvImport", tags=["Admin"], summary="Upload and process CSV file imports", status_code=201)
 async def upload_process_productbase_csv(
     response: Response, 
     file: UploadFile = File(..., description="CSV file containing product base data"),
     request: Request=Query(None, title=opasConfig.TITLE_REQUEST, description=opasConfig.DESCRIPTION_REQUEST),
+    document_type: models.ReportTypeEnum=Query(None, title=opasConfig.TITLE_REPORT_REQUESTED, description=opasConfig.DESCRIPTION_REPORT_REQUESTED),
     client_id: int = Depends(get_client_id),
     client_session: str = Depends(get_client_session),
     api_key: APIKey = Depends(get_api_key)
 ):
-    caller_name = "[v2/Admin/UpdateProductbase]"
+    caller_name = "[v2/Admin/CsvImport]"
 
-    opasDocPermissions.verify_header(request, "UpdateProductbase") # for debugging client call
+    opasDocPermissions.verify_header(request, "CsvImport") # for debugging client call
     log_endpoint(request, client_id=client_id, session_id=client_session, level="debug")
 
     ocd, session_info = opasDocPermissions.get_session_info(request, response, session_id=client_session, client_id=client_id, caller_name=caller_name)
     if session_info.admin != True:
         # watch to see if PaDS is using the reports as an admin or non-admin user, if admin, change reports to admin only
-        ret_val = f"Update productbase request by non-admin user ({session_info.username} id: {session_info.session_id})."
+        ret_val = f"CSV import request by non-admin user ({session_info.username} id: {session_info.session_id})."
         logger.error(ret_val)
         raise HTTPException(
             status_code=httpCodes.HTTP_401_UNAUTHORIZED, 
             detail=ret_val
         )       
     else:
-        msg = f"Update productbase request by admin user ({session_info.username}) id: {session_info.session_id})."
+        msg = f"CSV import request by admin user ({session_info.username}) id: {session_info.session_id})."
         logger.info(msg)
         if opasConfig.PADS_INFO_TRACE: print (msg)
 
     contents = file.file.read()
     csv_text = contents.decode('utf-8')
-    ocd.reload_api_productbase_from_csv(csv_text)
 
-    r = requests.post(
-        f"{localsecrets.PADS_BASE_URL}/RepopulateAllPEPWebContent",
-        headers={"UserAlertSecurityKey": localsecrets.PADS_API_KEY}
-    )
+    if document_type == models.ReportTypeEnum.productTable:
+        ocd.reload_api_productbase_from_csv(csv_text)
+        r = requests.post(
+            f"{localsecrets.PADS_BASE_URL}/RepopulateAllPEPWebContent",
+            headers={"UserAlertSecurityKey": localsecrets.PADS_API_KEY}
+        )
+        
+        resp = r.json()
 
-    resp = r.json()
-
-    if "failed" in resp["ReasonDescription"].lower():
-        raise HTTPException(
-            status_code=httpCodes.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"{resp['ReasonDescription']}"
+        if resp.get("ReasonDescription") and "failed" in resp["ReasonDescription"].lower():
+            raise HTTPException(
+                status_code=httpCodes.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"{resp['ReasonDescription']}"
         )
 
-
-    return resp
-
+        return resp
+    elif document_type == models.ReportTypeEnum.documentReferences:
+        ocd.update_document_references_from_csv(csv_text)
+    else:
+        raise HTTPException(
+            status_code=httpCodes.HTTP_400_BAD_REQUEST,
+            detail=f"Document type {document_type} not supported for CSV import"
+        )
 
 #-----------------------------------------------------------------------------
 @app.get("/v2/Admin/Reports/{report}", response_model=models.Report, tags=["Admin"], summary=opasConfig.ENDPOINT_SUMMARY_REPORTS)
@@ -961,6 +968,7 @@ async def admin_reports(response: Response,
             "ref_year_int",
             "ref_volume",
             "ref_publisher",
+            "skip_reason",
             "skip_incremental_scans",
             "last_update"
             ]
