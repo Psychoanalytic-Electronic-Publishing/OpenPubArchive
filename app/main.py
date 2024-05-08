@@ -745,6 +745,7 @@ async def admin_reports(response: Response,
     extra_condition = ""
     standard_filter = "1"
     limited_count = 0
+    fields = "*"
     ret_val = None
     if sortorder in ["asc","desc","ASC","DESC"]:
         sortorder = sortorder.upper()
@@ -948,30 +949,13 @@ async def admin_reports(response: Response,
         header = [
             "art_id",
             "ref_local_id",
-            "art_year",
             "ref_rx",
             "ref_rx_confidence",
             "ref_rxcf",
             "ref_rxcf_confidence",
-            "ref_sourcecode",
-            "ref_link_source",
-            "ref_authors",
-            "ref_title",
             "ref_text",
-            "ref_sourcetype",
-            "ref_sourcetitle",
-            "ref_authors_xml",
-            "ref_xml",
-            "ref_pgrg",
-            "ref_doi",
-            "ref_year",
-            "ref_year_int",
-            "ref_volume",
-            "ref_publisher",
-            "skip_reason",
-            "skip_incremental_scans",
-            "last_update"
             ]
+        fields = ", ".join(header)
     else:
         report_view = None
 
@@ -984,7 +968,7 @@ async def admin_reports(response: Response,
     # Get report
     
     # with order by for return
-    select = f"""SELECT * from {report_view}
+    select = f"""SELECT {fields} from {report_view}
                  WHERE {standard_filter}
                  {date_condition}
                  {userid_condition}
@@ -995,7 +979,7 @@ async def admin_reports(response: Response,
                  """
     
     # without order by for full count
-    select_count = f"""SELECT * from {report_view}
+    select_count = f"""SELECT {fields} from {report_view}
                        WHERE {standard_filter}
                        {date_condition}
                        {userid_condition}
