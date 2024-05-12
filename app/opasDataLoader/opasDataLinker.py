@@ -196,7 +196,7 @@ def walk_through_reference_set(ocd=ocd,
         updated_record_count = 0
 
         if options.dryrun or options.report_changes or options.report_links_days:
-            reportFilename = f"linker_change_report_{cumulative_time_start}.csv"
+            reportFilename = f"{options.report_name}_{cumulative_time_start}.csv"
             reportWriter, reportFile = initialise_report_writer(reportFilename, verbose)
 
         for ref_model in biblio_entries:
@@ -438,6 +438,9 @@ if __name__ == "__main__":
 
     parser.add_option("--report", action="store_true", dest="report_changes", default=False,
                       help="Generate a report of changes performed")
+
+    parser.add_option("--report-name", dest="report_name", default="linker_report",
+                      help="Name suffix for the report file (no extension)")
 
     parser.add_option("--report-links", dest="report_links_days", type="int", default=None,
                       help="Report on the links added in the past X days without modifying or adding new links.")
