@@ -195,8 +195,8 @@ def walk_through_reference_set(ocd=ocd,
         counter = 0
         updated_record_count = 0
 
-        if options.dryrun or options.report_changes:
-            reportFilename = f"linker_change_report_{cumulative_time_start}.csv"
+        if options.dryrun or options.report_changes or options.report_links_days:
+            reportFilename = f"{options.report_name}_{cumulative_time_start}.csv"
             reportWriter, reportFile = initialise_report_writer(reportFilename, verbose)
 
         for ref_model in biblio_entries:
@@ -217,6 +217,10 @@ def walk_through_reference_set(ocd=ocd,
                 bib_entry.ref_rx_confidence = opasConfig.RX_CONFIDENCE_NEVERMORE
                 bib_entry.link_updated = True                        
             else:
+                if options.report_links_days:
+                    report_write_changes(bib_entry, reportWriter, verbose)
+                    continue
+
                 if bib_entry.ref_rx_confidence == .01 or bib_entry.ref_rx_confidence == opasConfig.RX_CONFIDENCE_POSITIVE:
                     log_everywhere_if(verbose, "info", f"\t...Skipping Marked 'RX_CONFIDENCE_NEVERMORE (.01)' or RX_CONFIDENCE_POSITIVE (1) Reference ID: {bib_entry.ref_rx} Confidence {bib_entry.ref_rx_confidence}")
                     continue
@@ -276,7 +280,7 @@ def walk_through_reference_set(ocd=ocd,
     ocd.close_connection(caller_name=fname) # make sure connection is closed
     timeEnd = time.time()
 
-    if options.dryrun or options.report_changes:
+    if options.dryrun or options.report_changes or options.report_links_days:
         reportFile.close()
         uploadFilename = f"dry_run_{reportFilename}" if options.dryrun else reportFilename
         uploadFilepath = f"linker/{uploadFilename}"
@@ -435,6 +439,12 @@ if __name__ == "__main__":
     parser.add_option("--report", action="store_true", dest="report_changes", default=False,
                       help="Generate a report of changes performed")
 
+    parser.add_option("--report-name", dest="report_name", default="linker_report",
+                      help="Name suffix for the report file (no extension)")
+
+    parser.add_option("--report-links", dest="report_links_days", type="int", default=None,
+                      help="Report on the links added in the past X days without modifying or adding new links.")
+
     import optparse
     parser.formatter = optparse.IndentedHelpFormatter()
     # Set the width of the help output
@@ -486,10 +496,9 @@ if __name__ == "__main__":
 
     # scan articles added after date
     biblios_for_articles_after = f"""select *
-                                     from api_biblioxml2 as bib, api_articles as art
-                                     where bib.art_id=art.art_id
+                                     from api_biblioxml2 as bib
+                                     where bib.last_update >= '%s'
                                      {skip_for_incremental_scans}
-                                     and art.last_update >= '%s'
                                      and ref_rx_confidence != {opasConfig.RX_CONFIDENCE_NEVERMORE}
                                      {unlinked_ref_clause}
                                      {type_clause}
@@ -545,6 +554,10 @@ if __name__ == "__main__":
         doctest.testmod()
         print ("Fini. opasDataLoader Tests complete.")
         sys.exit()
+
+    if options.report_links_days:
+        date_after = datetime.datetime.now() - datetime.timedelta(days=options.report_links_days)
+        options.added_after = date_after.strftime('%Y-%m-%d')
 
     if options.nightly_includes:
         query = biblio_refs_nightly
