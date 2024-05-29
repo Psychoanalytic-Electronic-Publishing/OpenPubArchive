@@ -436,6 +436,9 @@ if __name__ == "__main__":
     parser.add_option("--dryrun", action="store_true", dest="dryrun", default=False,
                       help="Output what would be done, but don't do it")
 
+    parser.add_option("--sample", dest="sample", type="int", default=None,
+                      help="Size of sample to be randomly selected (for testing)")
+
     parser.add_option("--report", action="store_true", dest="report_changes", default=False,
                       help="Generate a report of changes performed")
 
@@ -545,6 +548,9 @@ if __name__ == "__main__":
     if options.run_oldest_first:
         print ("Scanning biblio table records by last update--oldest first.")
         addon_to_query = f"order by last_update ASC" # oldest first
+    elif options.sample:
+        print ("Fetching a randomly distributeds sample using --sample.")
+        addon_to_query = f"order by RAND() LIMIT {options.sample}"
     else:
         print (f"Scanning biblio table records in {direction} order.")
         addon_to_query = f"order by art_id {direction}, ref_local_id {direction}"
