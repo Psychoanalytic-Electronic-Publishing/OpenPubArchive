@@ -969,8 +969,15 @@ def xml_update(parsed_xml,
 
     artInfo.set_file_classification()
     if artInfo.file_classification == "preview":
-        # add preview purchase notice with DOI link
-        preview = ET.Element("purchase", doi=artInfo.art_doi)
+        xml_artinfo = parsed_xml.find("artinfo")
+        href = xml_artinfo.attrib["href"]
+
+        logger.error(f"DOI: {artInfo.art_doi} URL: {href}")
+
+        if artInfo.art_doi:
+            href = f"https://doi.org/{artInfo.art_doi}"
+        
+        preview = ET.Element("purchase", href=href)
         parsed_xml.find(".//body").insert(0, preview)
 
     
