@@ -104,6 +104,7 @@ import io
 import urllib.parse
 import csv
 import random
+import mimetypes
 
 from urllib import parse
 
@@ -5880,7 +5881,9 @@ async def documents_image_fetch(response: Response,
     media_type='image/jpeg'
     if imageID != "*":
         filename = fs.get_image_filename(filespec=imageID, insensitive=insensitive, log_errors=False) # IMAGE_SOURCE_PATH set as root above, all that we need
-        logger.debug(f"Random (*) expert pick image returns: {filename}.")       
+        logger.debug(f"Random (*) expert pick image returns: {filename}.")
+        media_type, _ = mimetypes.guess_type(filename)
+        logger.error(f"Media Type: {media_type} for {filename}")
 
     if download == 0 or download == 2:
         if imageID == "*":
@@ -5956,6 +5959,7 @@ async def documents_image_fetch(response: Response,
         try:
             response.status_code = httpCodes.HTTP_200_OK
             filename = fs.get_image_filename(filename)
+            media_type, _ = mimetypes.guess_type(filename)
             if fs.key is not None:
                 fileurl = fs.fs.url(filename)
                 fname = wget.download(fileurl)

@@ -545,7 +545,7 @@ class FlexFileSystem(object):
                     #ret_val = try2
         #else:
         #watch for case sensitive extensions on S3 and other systems
-        ret_val = self.get_imagename_if_exists(namestr=ret_val, extensions=(".jpg", ".gif", ".tif"), insensitive=insensitive)
+        ret_val = self.get_imagename_if_exists(namestr=ret_val, extensions=(".jpg", ".gif", ".tif", ".svg"), insensitive=insensitive)
         if ret_val is None and log_errors:
             logger.error(f"File {filespec} not found")
     
