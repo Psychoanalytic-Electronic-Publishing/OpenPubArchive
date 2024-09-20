@@ -63,26 +63,28 @@ def metadata_get_split_books():
     >>> len(split_books) <= 100
     True
     """
-    ret_val = []
+    ret_val = {}
     query = "sourcetype:book AND art_type:TOC"
 
     try:
         logger.info(f"Solr Query: q={query}")
         args = {
-            "fl": "art_id",
+            "fl": "sourcecode, art_vol",
             "fq": "*:*",
             "rows": 1000,
             "sort": "art_id asc",
         }
 
         results = solr_docs2.search(query, **args)
-        ret_val = [doc["art_id"] for doc in results.docs]
+        for doc in results.docs:
+            basecode = f"{doc['sourcecode']}{doc['art_vol'].zfill(3)}"
+            ret_val[basecode] = 0
         logger.info(f"Solr Query: q={query} returned {len(ret_val)} records")
 
     except Exception as e:
         logger.error(f"SplitBooks. Query: {query} Error: {e}")
 
-    return {item: 0 for item in ret_val}
+    return ret_val
 
 
 class MetadataCache:
