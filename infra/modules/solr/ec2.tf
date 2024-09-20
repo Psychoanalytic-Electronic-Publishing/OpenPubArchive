@@ -1,23 +1,29 @@
-data "aws_ami" "amazon" {
+data "aws_ami" "bitnami_solr" {
   most_recent = true
 
   filter {
-    name   = "image-id"
-    values = ["ami-0a252cea0ff9a3e6c"]
+    name   = "name"
+    values = ["bitnami-solr-*"]
   }
 
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
   }
-}
 
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  owners = ["679593333241"]
+}
 locals {
   efs_mount_point = "/mnt/solr"
 }
 
 resource "aws_instance" "efs_interface" {
-  ami                    = data.aws_ami.amazon.id
+  ami                    = data.aws_ami.bitnami_solr.id
   instance_type          = "t2.nano"
   vpc_security_group_ids = [aws_security_group.solr.id]
   key_name               = "${var.stack_name}-pep-${var.env}"
