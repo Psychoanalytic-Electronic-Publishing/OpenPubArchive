@@ -26,6 +26,7 @@ solrpy==1.0.0
 starlette~=0.19.1
 uvicorn~=0.13.4
 wget==3.2
+pypdf==4.3.1
 weasyprint~=56.0      # updated 2022-07-15
 xhtml2pdf~=0.2.8      # updated 2022-07-15
 python-multipart==0.0.8
