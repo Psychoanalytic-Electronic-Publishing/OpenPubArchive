@@ -167,7 +167,7 @@ def smart_search(smart_search_text):
             label = m.group("custom_label")
             if list_of_rxs:
                 # get rid of confidences
-                list_of_rxs = re.sub("\:0\.[0-9]{1,2}", "", list_of_rxs)
+                list_of_rxs = re.sub(r"\:(0\.[0-9]{1,2}|1\.0)", "", list_of_rxs)
                 or_bar_rxs = re.sub("\,\s*", " || ", list_of_rxs)
                 ret_val[opasConfig.KEY_SEARCH_SMARTSEARCH] = f"art_id:({or_bar_rxs})"
                 ret_val[opasConfig.KEY_SEARCH_TYPE] = opasConfig.ADVANCED
